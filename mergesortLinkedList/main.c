@@ -13,7 +13,7 @@
 #else
 #define MEASURE(name, func) func
 #endif
-//bisogna aggiungere -Dbenchmark al gcc
+//by default -Dbenchmark is added to gcc, it must be unmarked to disable this MACRO
 
 
 #include<stdlib.h>
@@ -48,36 +48,34 @@ void paragone_tra_liste(lista* l_1,lista* l_2,FILE* out){
 	int strlen_s2;		
 	while (l_1!=NULL){ 
 
-
 		strlen_s1=strlen(l_1->elemento.cognome);
 
 		strlen_s2=strlen(l_2->elemento.cognome);
 		
-
-
-
 		if(strlen_s2==strlen_s1){
 			
-			fprintf(out,"%d corretto: %s | %s strlen_sz:%d\n",i,l_1->elemento.cognome,l_2->elemento.cognome,strlen_s1);
+			fprintf(out, "%d corretto: %s | %s strlen_sz:%d\n", i, l_1->elemento.cognome, l_2->elemento.cognome, strlen_s1);
 			l_2=l_2->next;
 			l_1=l_1->next;
 			i++;
+		} else {
+			fprintf(out,"%d fallito: %s | %s strlen_sz:%d\n",i,l_1->elemento.cognome,l_2->elemento.cognome,strlen_s2);
+			return;
 		}
-		else {fprintf(out,"%d fallito: %s | %s strlen_sz:%d\n",i,l_1->elemento.cognome,l_2->elemento.cognome,strlen_s2); return;}
 	}
 	if(l_2!=NULL) printf("Dimensioni liste diverse\n");
 	else printf("Le 2 liste corrispondono, sono ordinate.\n");
 
 }
 
-void script(const char *nomefile,int fanculo){
+void script(const char *nomefile,int n_elem){
 
 	FILE *f=fopen(nomefile,"w");
 	if(f==NULL) printf("Errore apertura\n");
 	srand((unsigned)time(NULL));
 
-	int l_nome,t,carattere,n=fanculo;
-	while(n--){
+	int l_nome, t, carattere;
+	while(n_elem--){
 		l_nome=1+rand()%17;
 		t=1+rand()%10;
 		for(int i=0;i<l_nome;i++){
@@ -92,9 +90,12 @@ void script(const char *nomefile,int fanculo){
 	fclose(f);
 }
 
-int main (int argc,char *argv[]) {
-	int fanculo=atoi(argv[1]);
-	script("dati_nuovi.txt",fanculo);
+int main (int argc, char *argv[]) {
+	int n_elem=2^20;
+	
+
+	if(argc > 1) n_elem=atoi(argv[1]);
+	script("dati_nuovi.txt",n_elem);
 	lista *testa1=init_lista();
 	lista **coda;
 	FILE *f1;
@@ -112,16 +113,6 @@ int main (int argc,char *argv[]) {
 	MEASURE("Scrittura della lista su file di output",
 	scrivi_lista_su_file(*coda,ecco));
 
-	//lista* dioporco=testa1;
-	//stampa_orari(testa1,ecco));
-/*	printf(coda->elemento.cognome);
-	puts("\n");
-	if (coda!=NULL) {
-	stampa_orari(coda);
-}
-*/
-	//coda=testa1;
-//	stampa_orari(*coda);
 
 	puts("____________________________");
 	fclose(f1);
@@ -129,16 +120,18 @@ int main (int argc,char *argv[]) {
 	FILE *out=fopen("out.txt","w");
 	if(f1==NULL) printf("ciaone fopen\n");
 
-
-//**************************************** uncomment this part for trying to sort with a standard mergesort on vectors
+#ifdef mergesort_on_array
+//****************************************// to let compile this part -Dmergesort_on_array must be added in the makefile, usually this sort on a standard array is really slow so its not included
 	
-	char lista_disordinata[150002][22];
+	char lista_disordinata[n_elem+1][22];
 	int n=0,i=0,new_line_count=0;
 	lista *testa=init_lista();
 	MEASURE("costruisco il vettore (lettura file)",
 	while(new_line_count!=EOF){
 		new_line_count=fgetc(f1);
-		if(new_line_count=='\n') { lista_disordinata[n++][i]=0;i=0; }
+		if(new_line_count=='\n') { 
+			lista_disordinata[n++][i]=0;i=0;
+		}
 		else lista_disordinata[n][i++]=new_line_count;
 	});
 	MEASURE("Mergesort sul vettore",
@@ -160,32 +153,26 @@ int main (int argc,char *argv[]) {
 
 	n=new_line_count;
 
-
-
-
-	
-	
-	//printf("benchmarked\n");
 	
 	testa=crea_lista_a_mano(testa,lista_disordinata,n));
 
-//tolgo il merge sort sui vettori per avere n grandi
 
+#endif
  //**************************************/
 
 	lista *mia=init_lista();
-	//stampa_orari(testa);
+
 	f1=fopen("dati_nuovi.txt","r");
 	puts("____________________________");
 	MEASURE("InsertionSort (crea linked_list ordinata da file)",mia=crea_lista_da_file(mia,f1));
 	printf("____________________________\n");
-//	paragone(lista_disordinata,testa,n,out);
-	//cancella(testa);
+//	paragone(lista_disordinata,testa,n,out); //this checks if the mergeSort on arrays sorts the list and the produced list is equal to the ones produced by other sorts
+
 	paragone_tra_liste(mia,*coda,out);
 	fclose(out);
 	fclose(f1);
 
-	//script("dati_nuovi.txt");
+
 
 
 
