@@ -30,9 +30,10 @@ lista *costruisci_lista(lista *mia,char **vettore_ordinato,int n){
 		
 		spazio=strchr(vettore_ordinato[i],' ');
 		*spazio=0;
+		int j=0;
 		strcpy(mia->elemento.cognome,vettore_ordinato[i]);
 
-		while(!isdigit(++spazio));	
+		while(!isdigit((int)spazio[++j]));	
 		
 		mia->elemento.ora=atoi(spazio);
 		mia->next=NULL;
