@@ -1,5 +1,7 @@
 cflags=-std=gnu99 -Wpedantic -Wall -g -Dbenchmark
-
+#add -Dmergesort_on_array to cflags to let the compile the part
+#wich will execute a standard mergeSort on the array to confront times
+#usually this will be really more slower then the others
 all: out.a
 
 out.a: main.o mergesort_linked_list.o el.o
